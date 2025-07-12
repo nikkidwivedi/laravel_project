@@ -3,15 +3,19 @@
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')] class extends Component {
+/**
+ * Livewire authentication component (do not edit).
+ */
+new #[Layout('components.layouts.auth')] class extends Component
+{
     #[Validate('required|string|email')]
     public string $email = '';
 
@@ -20,16 +24,15 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     public bool $remember = false;
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function login(): void
     {
         $this->validate();
-
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        if (! Auth::attempt(
+            ['email' => $this->email, 'password' => $this->password],
+            $this->remember
+        )) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -43,9 +46,6 @@ new #[Layout('components.layouts.auth')] class extends Component {
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
 
-    /**
-     * Ensure the authentication request is not rate limited.
-     */
     protected function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
@@ -64,64 +64,117 @@ new #[Layout('components.layouts.auth')] class extends Component {
         ]);
     }
 
-    /**
-     * Get the authentication rate limiting throttle key.
-     */
     protected function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->email).'|'.request()->ip());
     }
-}; ?>
+};
+?>
 
-<div class="flex flex-col gap-6">
-    <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+{{--  ▼▼  SINGLE‑ROOT BLADE MARKUP (NiceAdmin theme)  ▼▼ --}}
+<section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+    <div class="container">
 
-    <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
 
-    <form wire:submit="login" class="flex flex-col gap-6">
-        <!-- Email Address -->
-        <flux:input
-            wire:model="email"
-            :label="__('Email address')"
-            type="email"
-            required
-            autofocus
-            autocomplete="email"
-            placeholder="email@example.com"
-        />
+                {{-- Logo --}}
+                <div class="py-4">
+                    <a href="{{ url('/') }}" class="logo d-flex align-items-center w-auto">
+                        <img src="{{ asset('assets/img/logo.png') }}" alt="">
+                        <span class="d-none d-lg-block">NiceAdmin</span>
+                    </a>
+                </div>
 
-        <!-- Password -->
-        <div class="relative">
-            <flux:input
-                wire:model="password"
-                :label="__('Password')"
-                type="password"
-                required
-                autocomplete="current-password"
-                :placeholder="__('Password')"
-                viewable
-            />
+                {{-- Card --}}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="pt-4 pb-2">
+                            <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
+                            <p class="text-center small">Enter your email & password to login</p>
+                        </div>
 
-            @if (Route::has('password.request'))
-                <flux:link class="absolute end-0 top-0 text-sm" :href="route('password.request')" wire:navigate>
-                    {{ __('Forgot your password?') }}
-                </flux:link>
-            @endif
+                        {{-- Session flash --}}
+                        @if (session('status'))
+                            <div class="alert alert-success text-center py-2">{{ session('status') }}</div>
+                        @endif
+
+                        {{-- Livewire form --}}
+                        <form wire:submit.prevent="login"
+                              class="row g-3 needs-validation"
+                              novalidate>
+
+                            {{-- Email --}}
+                            <div class="col-12">
+                                <label for="email" class="form-label">Email</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                    <input  type="email"
+                                            id="email"
+                                            wire:model.defer="email"
+                                            class="form-control @error('email') is-invalid @enderror"
+                                            required
+                                            autocomplete="email">
+                                    @error('email')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            {{-- Password --}}
+                            <div class="col-12">
+                                <label for="password" class="form-label">Password</label>
+                                <input  type="password"
+                                        id="password"
+                                        wire:model.defer="password"
+                                        class="form-control @error('password') is-invalid @enderror"
+                                        required
+                                        autocomplete="current-password">
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Remember me --}}
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input  class="form-check-input"
+                                            type="checkbox"
+                                            wire:model="remember"
+                                            id="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">
+                                        Remember me
+                                    </label>
+                                </div>
+                            </div>
+
+                            {{-- Submit --}}
+                            <div class="col-12">
+                                <button class="btn btn-primary w-100" type="submit">
+                                    Login
+                                </button>
+                            </div>
+
+                            {{-- Register link --}}
+                            @if (Route::has('register'))
+                                <div class="col-12 text-center">
+                                    <p class="small mb-0">
+                                        Don't have an account?
+                                        <a href="{{ route('register') }}" wire:navigate>
+                                            Register
+                                        </a>
+                                    </p>
+                                </div>
+                            @endif
+                        </form>
+                    </div>
+                </div>
+
+                {{-- Footer credits --}}
+                <div class="credits">
+                    Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+                </div>
+            </div>
         </div>
-
-        <!-- Remember Me -->
-        <flux:checkbox wire:model="remember" :label="__('Remember me')" />
-
-        <div class="flex items-center justify-end">
-            <flux:button variant="primary" type="submit" class="w-full">{{ __('Log in') }}</flux:button>
-        </div>
-    </form>
-
-    @if (Route::has('register'))
-        <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600 dark:text-zinc-400">
-            <span>{{ __('Don\'t have an account?') }}</span>
-            <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
-        </div>
-    @endif
-</div>
+    </div>
+</section>
