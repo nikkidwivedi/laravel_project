@@ -4,14 +4,14 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Volt\Volt;
 
-test('password can be updated', function () {
+test('password can be updated from profile component', function () {
     $user = User::factory()->create([
         'password' => Hash::make('password'),
     ]);
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.password')
+    $response = Volt::test('settings.profile')
         ->set('current_password', 'password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')
