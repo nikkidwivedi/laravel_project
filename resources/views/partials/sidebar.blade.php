@@ -31,7 +31,7 @@
       <li class="nav-heading">Pages</li>
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{{ route('dashboard') }}">
+        <a class="nav-link collapsed" href="{{ route('settings.profile') }}">
           <i class="bi bi-person"></i>
           <span>Profile</span>
         </a>
