@@ -29,7 +29,7 @@ test('correct password must be provided to update password', function () {
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.password')
+    $response = Volt::test('settings.profile')
         ->set('current_password', 'wrong-password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')
